@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import java.lang.*?>
+<?import java.util.*?>
+<?import javafx.scene.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<AnchorPane styleClass="StyleSheet.css" id="AnchorPane" prefHeight="400.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="gui.ChatBoxController">
+   <children>
+      <BorderPane layoutX="200.0" layoutY="100.0" prefHeight="400.0" prefWidth="600.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+         <center>
+            <TextArea fx:id="inbox" prefHeight="200.0" prefWidth="200.0" BorderPane.alignment="CENTER" />
+         </center>
+         <bottom>
+            <BorderPane prefHeight="25.0" prefWidth="600.0" BorderPane.alignment="CENTER">
+               <right>
+                  <Button mnemonicParsing="false" onAction="#handleInputEvent" text="Send" BorderPane.alignment="CENTER" />
+               </right>
+               <center>
+                  <TextField fx:id="input" BorderPane.alignment="CENTER" />
+               </center>
+            </BorderPane>
+         </bottom>
+      </BorderPane>
+   </children>
+</AnchorPane>
