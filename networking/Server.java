@@ -112,6 +112,12 @@ public class Server implements Runnable{
             this.name = name;
             monitor = new Listener();
             new Thread(monitor).start();
+            sendAll("userlist stream");
+            for (String n : names)
+            {
+                sendAll(n);
+            }
+            sendAll("end stream");
         }
 
         public class Listener implements Runnable {
@@ -123,10 +129,17 @@ public class Server implements Runnable{
                 try {
                     while (!shouldStop) {
                         String response = recieve();
-                        if (response.equalsIgnoreCase("disconnect")) {
+                        if (response.equalsIgnoreCase("/disconnect")) {
                             sendAll(name + " has left the chat");
                             stop();
                             removeConnection(getConnection());
+                            Storage.names.remove(name);
+                            sendAll("userlist stream");
+                            for(String name : names)
+                            {
+                                sendAll(name);
+                            }
+                            sendAll("end stream");
                             break;
                         }
                         if (response.charAt(0) == '/') {

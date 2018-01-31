@@ -8,11 +8,3 @@ and open the template in the editor.
     Author     : amclay2
 */
 
-.TextArea:disabled{
-    -fx-opacity: 1.0;
-    -fx-stroke: #000000;
-}
-
-.TextArea {
-    -fx-stroke:#000000;
-}

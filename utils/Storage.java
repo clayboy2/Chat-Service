@@ -16,4 +16,8 @@ public class Storage {
     public static ArrayList<String> names = new ArrayList<>();
     public static Server server = null;
     
+    public static ArrayList<String> getNames()
+    {
+        return names;
+    }
 }

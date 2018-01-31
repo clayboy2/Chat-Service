@@ -6,21 +6,21 @@
 package gui;
 
 
-import java.awt.event.KeyListener;
 import java.io.IOException;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.ResourceBundle;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
+import javafx.scene.Node;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
-import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
+import javafx.scene.input.MouseEvent;
 import networking.Client;
+import utils.Storage;
 
 /**
  * FXML Controller class
@@ -31,14 +31,23 @@ public class ChatBoxController implements Initializable {
 
     public static Client client;
     private Listener monitor;
-
+    
     @FXML
     private TextArea inbox;
     @FXML
     private TextField input;
+    @FXML
+    private TextArea userList;
 
     public void handleInputEvent(ActionEvent event) {
         String toSend = input.getText();
+        if (toSend.equalsIgnoreCase("/disconnect"))
+        {
+            client.send(toSend);
+            monitor.stop();
+            ((Node) (event.getSource())).getScene().getWindow().hide();
+        }
+        
         client.send(toSend);
     }
     
@@ -49,7 +58,18 @@ public class ChatBoxController implements Initializable {
 
     @Override
     public void initialize(URL url, ResourceBundle rb) {
-        inbox.setDisable(true);
+        inbox.setEditable(false);
+        input.setFocusTraversable(true);
+        inbox.setFocusTraversable(false);
+        userList.setEditable(false);
+        userList.setFocusTraversable(false);
+        inbox.setOnMousePressed(new EventHandler<MouseEvent>() {
+            @Override 
+            public void handle(MouseEvent e)
+            {
+                input.requestFocus();
+            }
+        });
         try {
             client.recieve();
             client.recieve();
@@ -74,19 +94,36 @@ public class ChatBoxController implements Initializable {
     }
 
     public class Listener implements Runnable {
-
+        private volatile boolean isRunning;
         @Override
         public void run() {
-            while (true) {
+            isRunning = true;
+            while (isRunning) {
                 String response;
                 try {
                     response = client.recieve();
-                    inbox.appendText(response + "\n");
+                    if (response.equalsIgnoreCase("userlist stream"))
+                    {
+                        while(!response.equalsIgnoreCase("end stream"))
+                        {
+                            response = client.recieve();
+                            userList.appendText(response+"\n");
+                        }
+                    }
+                    else
+                    {
+                        inbox.appendText(response + "\n");
+                    }
                 } catch (IOException ex) {
                     inbox.appendText("ERROR LOADING RESPONSE");
                 }
 
             }
+        }
+        
+        public void stop()
+        {
+            isRunning = false;
         }
 
     }
