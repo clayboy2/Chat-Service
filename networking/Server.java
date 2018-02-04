@@ -25,7 +25,7 @@ public class Server implements Runnable{
     private ArrayList<Connection> connections;
     private final String salutation = "Welcome to my Chat Server! Please enter a name: ";
     private ArrayList<String> names;
-
+    
     @Override
     public void run() {
         try {

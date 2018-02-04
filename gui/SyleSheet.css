@@ -8,3 +8,7 @@ and open the template in the editor.
     Author     : amclay2
 */
 
+.TextArea {
+    -fx-text-fill:black;
+    -fx-opacity:1.0;
+}
