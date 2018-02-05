@@ -57,7 +57,7 @@ public class ChatBoxController implements Initializable {
 
     @Override
     public void initialize(URL url, ResourceBundle rb) {
-        inbox.setDisable(true);
+        inbox.setEditable(false);
         input.setFocusTraversable(true);
         inbox.setFocusTraversable(false);
         userList.setEditable(false);

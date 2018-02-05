@@ -24,6 +24,8 @@ public class Server implements Runnable{
     private ArrayList<Connection> connections;
     private final String salutation = "Welcome to my Chat Server! Please enter a name: ";
     private ArrayList<String> names;
+    private final String password = "marshmello";
+    private volatile boolean serverRunning;
     
     @Override
     public void run() {
@@ -31,9 +33,14 @@ public class Server implements Runnable{
             connections = new ArrayList<>();
             names = new ArrayList<>();
             ServerSocket server = new ServerSocket(1120);
-            while (true) {
+            serverRunning = true;
+            while (serverRunning) {
                 System.out.println("Waiting for connections...");
                 Socket client = server.accept();
+                if (!serverRunning)
+                {
+                    break;
+                }
                 System.out.println("Accepted connection from "+client.getInetAddress());
                 new PrintWriter(client.getOutputStream(),true).println(salutation);
                 ConnectionManager cm = new ConnectionManager(client);
@@ -42,6 +49,11 @@ public class Server implements Runnable{
         } catch (IOException e) {
             System.out.println("Error running server");
         }
+    }
+    
+    private void stopServer()
+    {
+        serverRunning = false;
     }
     
     private class ConnectionManager implements Runnable
@@ -92,6 +104,11 @@ public class Server implements Runnable{
                 }
             }
         }
+    }
+    
+    public boolean enterPassword(String userPassword)
+    {
+        return (userPassword.equals(password));
     }
 
     private class Connection {
@@ -156,6 +173,12 @@ public class Server implements Runnable{
                                 case "help":
                                     send("Available server commands ('help','disconnect', refresh users')");
                                     break;
+                                case "stop server":
+                                    send("Please enter server password: ");
+                                    if (enterPassword(recieve()))
+                                    {
+                                        stopServer();
+                                    }
                                 default:
                                     send("Invalid server command");
                                     break;
