@@ -11,6 +11,7 @@
       <Label layoutX="260.0" layoutY="171.0" text="Please enter a name:" />
       <TextField fx:id="nameBox" layoutX="240.0" layoutY="188.0" promptText="username" />
       <Button layoutX="288.0" layoutY="280.0" mnemonicParsing="false" onAction="#onButtonPush" text="Submit" />
-      <Label fx:id="salutation" layoutX="260.0" layoutY="234.0" prefHeight="17.0" prefWidth="110.0" text="Server response..." />
+      <Label fx:id="response" layoutX="260.0" layoutY="234.0" prefHeight="17.0" prefWidth="110.0" text="Server response..." />
+      <Label fx:id="salutation" layoutX="301.0" layoutY="33.0" />
    </children>
 </AnchorPane>

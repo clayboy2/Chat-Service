@@ -45,59 +45,69 @@ public class NameController implements Initializable {
 
     public void onButtonPush(ActionEvent event) {
         String name = nameBox.getText();
-        response = new Label();
+        boolean goodName = false;
         System.out.println("Selected name: " + name);
-        if (name.equals("")) {
-            response.setText("Invalid Name");
-        } else if (Storage.names.contains(name)) {
-            response.setText("Name in use already, please select another");
-        } else {
             try {
                 c.send(name);
+                String serverResponse = c.recieve();
+                if (serverResponse.equalsIgnoreCase("good name"))
+                {
+                    goodName = true;
+                }
+                else
+                {
+                    response.setText(serverResponse);
+                }
             } catch (Exception e) {
                 e.printStackTrace();
             }
-            Storage.names.add(name);
-            //Launch chat service
-            Parent root;
-            try {
-                root = FXMLLoader.load(getClass().getResource("/gui/ChatBox.fxml"));
-                Stage stage = new Stage();
-                stage.setTitle("Name selector");
-                stage.setScene(new Scene(root));
-                stage.show();
-                ((Node) (event.getSource())).getScene().getWindow().hide();
+            if (goodName) {
 
-            } catch (IOException e) {
-                System.out.println("Error Launcing name screen");
-                e.printStackTrace();
+                //Launch chat service
+                Parent root;
+                try {
+                    root = FXMLLoader.load(getClass().getResource("/gui/ChatBox.fxml"));
+                    Stage stage = new Stage();
+                    stage.setTitle("Name selector");
+                    stage.setScene(new Scene(root));
+                    stage.show();
+                    ((Node) (event.getSource())).getScene().getWindow().hide();
+
+                } catch (IOException e) {
+                    System.out.println("Error Launcing name screen");
+                    e.printStackTrace();
+                }
             }
-        }
+
     }
 
     @Override
     public void initialize(URL url, ResourceBundle rb) {
+        try {
+            salutation.setText(c.recieve());
+            response.setText(c.recieve());
+        } catch (IOException ex) {
+        }
         nameBox.setOnKeyPressed(new EventHandler<KeyEvent>() {
             @Override
             public void handle(KeyEvent ke) {
+                boolean goodName = false;
                 switch (ke.getCode()) {
                     case ENTER:
                         String name = nameBox.getText();
-                        response = new Label();
-                        System.out.println("Selected name: " + name);
-                        if (name.equals("")) {
-                            response.setText("Invalid Name");
-                        } else if (Storage.names.contains(name)) {
-                            response.setText("Name in use already, please select another");
-                        } else {
-                            try {
-                                c.send(name);
-                            } catch (Exception e) {
-                                e.printStackTrace();
+                        try {
+                            c.send(name);
+                            String serverResponse = c.recieve();
+                            response.setText(serverResponse);
+                            if (serverResponse.equalsIgnoreCase("good name")) {
+                                goodName = true;
                             }
-                            Storage.names.add(name);
-                            //Launch chat service
-                            Parent root;
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+                        //Launch chat service
+                        Parent root;
+                        if (goodName) {
                             try {
                                 root = FXMLLoader.load(getClass().getResource("/gui/ChatBox.fxml"));
                                 Stage stage = new Stage();
@@ -109,7 +119,6 @@ public class NameController implements Initializable {
                                 System.out.println("Error Launcing name screen");
                                 e.printStackTrace();
                             }
-
                         }
                         break;
                     default:

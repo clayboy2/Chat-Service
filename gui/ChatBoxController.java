@@ -10,11 +10,14 @@ import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.ResourceBundle;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.Node;
+import javafx.scene.control.ListView;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
 import javafx.scene.input.KeyEvent;
@@ -37,7 +40,8 @@ public class ChatBoxController implements Initializable {
     @FXML
     private TextField input;
     @FXML
-    private TextArea userList;
+    private ListView<String> userList;
+    
 
     public void handleInputEvent(ActionEvent event) {
         String toSend = input.getText();
@@ -49,11 +53,6 @@ public class ChatBoxController implements Initializable {
         }
         
         client.send(toSend);
-    }
-    
-    public void enterKey(ActionEvent event)
-    {
-        
     }
 
     @Override
@@ -70,14 +69,9 @@ public class ChatBoxController implements Initializable {
                 input.requestFocus();
             }
         });
-        try {
-            client.recieve();
-            client.recieve();
-        } catch (IOException ex) {
-
-        }
         monitor = new Listener();
         new Thread(monitor).start();
+        client.send("");
         input.setOnKeyPressed(new EventHandler<KeyEvent>() {
             @Override
             public void handle(KeyEvent ke)
@@ -104,11 +98,17 @@ public class ChatBoxController implements Initializable {
                     response = client.recieve();
                     if (response.equalsIgnoreCase("userlist stream"))
                     {
-                        while(!response.equalsIgnoreCase("end stream"))
+                        ArrayList<String> users = new ArrayList<>();
+                        while(true)
                         {
                             response = client.recieve();
-                            userList.appendText(response+"\n");
+                            if (response.equalsIgnoreCase("end stream"))
+                            {
+                                break;
+                            }
+                            users.add(response);
                         }
+                        refreshUserList(users);
                     }
                     else
                     {
@@ -127,5 +127,17 @@ public class ChatBoxController implements Initializable {
         }
 
     }
-
+    
+    private void refreshUserList(ArrayList<String> users)
+    {
+        System.out.println("Listing recv'd users");
+        for (String s : users)
+        {
+            System.out.println(s);
+        }
+        System.out.println("End list");
+        ObservableList<String> list = FXCollections.observableArrayList(users);
+        userList.setItems(list);
+        userList.refresh();
+    }
 }

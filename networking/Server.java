@@ -14,7 +14,6 @@ import java.net.Socket;
 import java.util.ArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import utils.Storage;
 
 /**
  *
@@ -56,17 +55,13 @@ public class Server implements Runnable{
         @Override
         public void run()
         {
-            BufferedReader in = null;
-            PrintWriter out = null;
+            BufferedReader in;
+            PrintWriter out;
             try {
                 in = new BufferedReader(new InputStreamReader(s.getInputStream()));
                 out = new PrintWriter(s.getOutputStream(),true);
             } catch (IOException ex) {
-                
-            }
-            if (in==null||out==null)
-            {
-                System.exit(0);
+                return;
             }
             while(true)
             {
@@ -78,7 +73,7 @@ public class Server implements Runnable{
                 } catch (IOException ex) {
                     
                 }
-                if (Storage.names.contains(response.toLowerCase()))
+                if (names.contains(response.toLowerCase()))
                 {
                     out.println("Name in use already. Pick a new name");
                     goodName = false;
@@ -90,6 +85,8 @@ public class Server implements Runnable{
                 }
                 if (goodName)
                 {
+                    out.println("good name");
+                    names.add(response);
                     connections.add(new Connection(s, out, in, response));
                     break;
                 }
@@ -105,19 +102,27 @@ public class Server implements Runnable{
         private final Listener monitor;
         private final String name;
 
+        private void init()
+        {
+            try {
+                recieve();
+            } catch (IOException ex) {
+            }
+            sendAll("userlist stream");
+            names.forEach((n) -> {
+                sendAll(n);
+            });
+            sendAll("end stream");
+            new Thread(monitor).start();
+        }
+        
         public Connection(Socket s, PrintWriter out, BufferedReader in, String name) {
             this.connection = s;
             this.out = out;
             this.in = in;
             this.name = name;
             monitor = new Listener();
-            new Thread(monitor).start();
-            sendAll("userlist stream");
-            for (String n : names)
-            {
-                sendAll(n);
-            }
-            sendAll("end stream");
+            init();
         }
 
         public class Listener implements Runnable {
@@ -129,21 +134,32 @@ public class Server implements Runnable{
                 try {
                     while (!shouldStop) {
                         String response = recieve();
+                        if (response.equals(""))
+                        {
+                            continue;
+                        }
                         if (response.equalsIgnoreCase("/disconnect")) {
                             sendAll(name + " has left the chat");
                             stop();
                             removeConnection(getConnection());
-                            Storage.names.remove(name);
-                            sendAll("userlist stream");
-                            for(String name : names)
-                            {
-                                sendAll(name);
-                            }
-                            sendAll("end stream");
+                            names.remove(name);
+                            sendNames();
                             break;
                         }
-                        if (response.charAt(0) == '/') {
-                            //Do a command...
+                        else if (response.charAt(0) == '/') {
+                            response = response.substring(1);
+                            switch(response)
+                            {
+                                case "refresh users":
+                                    sendNames();
+                                    break;
+                                case "help":
+                                    send("Available server commands ('help','disconnect', refresh users')");
+                                    break;
+                                default:
+                                    send("Invalid server command");
+                                    break;
+                            }
                         } else {
                             response = name + ": " + response;
                             sendAll(response);
@@ -157,6 +173,17 @@ public class Server implements Runnable{
 
             public void stop() {
                 this.shouldStop = true;
+            }
+            
+            private void sendNames()
+            {
+                sendAll("userlist stream");
+                for(String name : names)
+                {
+                    System.out.println(name);
+                    sendAll(name);
+                }
+                sendAll("end stream");
             }
         }
 
